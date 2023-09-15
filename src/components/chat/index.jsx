@@ -23,7 +23,7 @@ function Chatbot({ axiosClient }) {
 		];
 		setMsg(newMessages);
 		setText("");
-		await axiosClient
+		await axiosClient.current
 			.post("/", newMessages, {
 				headers: { "Access-Control-Allow-Origin": "*" },
 			})

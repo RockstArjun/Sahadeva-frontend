@@ -12,7 +12,6 @@ function App() {
 	const axiosClient = useRef(
 		axios.create({
 			baseURL: process.env.REACT_APP_SERVER_URL,
-			timeout: 5000,
 			responseType: "json",
 		})
 	);
