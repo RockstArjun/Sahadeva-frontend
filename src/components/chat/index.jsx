@@ -1,9 +1,8 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { BsFillSendFill } from "react-icons/bs/index";
 import "./global.css";
 
-function Chatbot() {
+function Chatbot({ axiosClient }) {
 	const [text, setText] = useState("");
 
 	const [msg, setMsg] = useState([
@@ -24,8 +23,8 @@ function Chatbot() {
 		];
 		setMsg(newMessages);
 		setText("");
-		await axios
-			.post("https://ed83-206-84-225-129.ngrok-free.app/", newMessages, {
+		await axiosClient
+			.post("/", newMessages, {
 				headers: { "Access-Control-Allow-Origin": "*" },
 			})
 			.then((res) => {
@@ -69,7 +68,7 @@ function Chatbot() {
 							<input
 								type="text"
 								className="bg-[#0000] focus:outline-0 text-[#DfD7Df] w-3/4"
-								placeholder="Let's start designing... "
+								placeholder="Ask your queries... "
 								value={text}
 								onChange={(e) => setText(e.target.value)}
 							/>

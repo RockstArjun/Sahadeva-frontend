@@ -1,8 +1,8 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import styles from "./Login.module.css";
 
-const SignIn = () => {
+const SignIn = ({ axiosClient }) => {
 	const [formErrors, setFormErrors] = useState({});
 	const [isSubmit, setIsSubmit] = useState(false);
 	const [user, setUserDetails] = useState({
@@ -43,9 +43,9 @@ const SignIn = () => {
 			const formData = new FormData();
 			formData.append("email", user.email);
 			formData.append("password", user.password);
-			axios.post("https://ed83-206-84-225-129.ngrok-free.app/login", formData).then((res) => {
+			axiosClient.current.post("/login", formData).then((res) => {
 				// backend db url
-				alert(res.data.message);
+				Swal.fire({ text: res.data.message, icon: "success" });
 			});
 		}
 	}, [formErrors]);
