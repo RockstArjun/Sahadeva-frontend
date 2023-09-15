@@ -27,7 +27,7 @@ const Admin = ({ axiosClient }) => {
 		});
 		const response = await axiosClient.current.post("/upload", formData);
 		Swal.fire({
-			text: response.json()["message"],
+			text: await response.data["message"],
 			icon: "success",
 		});
 
