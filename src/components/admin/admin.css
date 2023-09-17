@@ -1,7 +1,19 @@
-
+.html,body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	font-family:  Tahoma, Verdana, sans-serif;
+}
+.page-cointainer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+}
 .container {
-	margin-top: 20vh !important;
-	max-width: 32rem;
+	margin-top: 5vh !important;
+	margin-bottom: 5vh !important;
+	max-width: 42rem;
 	margin: 0 auto;
 	padding: 2rem;
 	background: #fff;
@@ -13,7 +25,7 @@
 .title {
 	font-size: 1.5rem;
 	font-weight: bold;
-	font-family: monospace;
+	font-family:  Tahoma, Verdana, sans-serif;
 	text-align: center;
 	margin-bottom: 1.5rem;
 }
@@ -76,7 +88,7 @@
 }
 
 .youtube-link-input button {
-	background: #3498db;
+	background: #0E125A;
 	color: white;
 	border: none;
 	border-radius: 0.25rem;
@@ -109,7 +121,7 @@
 /* Updated button styles for the Upload button */
 .upload-button {
 	width: 100%;
-	background: #3498db;
+	background: #0E125A;
 	color: white;
 	padding: 1rem;
 	border: none;
