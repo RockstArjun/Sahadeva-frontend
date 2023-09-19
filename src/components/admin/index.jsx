@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import "./admin.css";
+import { endpointMap, getFileType } from "../../utils";
 
 const Admin = ({ axiosClient }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -21,64 +22,58 @@ const Admin = ({ axiosClient }) => {
   };
 
   const handleUpload = async () => {
-    const promises = [];
+    const formDataMap = new Map();
+    formDataMap.set("image", new FormData());
+    formDataMap.set("video", new FormData());
+    formDataMap.set("document", new FormData());
 
+    let error;
     selectedFiles.forEach((file) => {
-      const fileExtension = file.name.split(".").pop().toLowerCase();
-      const formData = new FormData();
-      formData.append("files", file);
-
-      let endpoint;
-      if (
-        fileExtension === "jpg" ||
-        fileExtension === "jpeg" ||
-        fileExtension === "png"
-      ) {
-        endpoint = "/images";
-      } else if (
-        fileExtension === "mp4" ||
-        fileExtension === "avi" ||
-        fileExtension === "mov"
-      ) {
-        endpoint = "/videos";
-      } else if (fileExtension === "pdf") {
-        endpoint = "/documents";
-      } else {
-        Swal.fire({
-          text: `Unsupported file type: ${file.name}`,
-          icon: "error",
-        });
-        return;
+      try {
+        formDataMap[getFileType(file.name)].append("files", file);
+      } catch (e) {
+        error = e;
       }
-
-      promises.push(
-        axiosClient.current
-          .post(endpoint, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              "Access-Control-Allow-Origin": "*",
-            },
-          })
-          .then(() => {
-            Swal.fire({
-              text: `File "${file.name}" uploaded successfully`,
-              icon: "success",
-            });
-          })
-          .catch((error) => {
-            Swal.fire({
-              text: `Error uploading file "${file.name}": ${error.message}`,
-              icon: "error",
-            });
-          })
-      );
     });
 
-    youtubeLinks.forEach((link) => {
-      promises.push(axiosClient.current.post("/youtube?url=" + link));
+    if (error) {
+      Swal.fire({
+        title: "Error",
+        text: `Unsupported file type: ${file.name}`,
+        icon: "error",
+      });
+      return;
+    }
+
+    const promises = formDataMap.map((formData, fileType) => {
+      const endpoint = endpointMap[fileType];
+      return axiosClient.current.post(endpoint, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
     });
 
-    await Promise.allSettled(promises);
+    promises.push(axiosClient.current.post("/youtube", urls));
+
+    const results = await Promise.allSettled(promises);
+    const rejected = results.filter((result) => result.status === "rejected");
+    if (rejected.length > 0) {
+      console.error(rejected);
+      Swal.fire({
+        title: "Error",
+        text: "Some files failed to upload",
+        icon: "error",
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: "Success",
+      text: "All files uploaded successfully",
+      icon: "success",
+    });
 
     setSelectedFiles([]);
     setYoutubeLinks([]);
