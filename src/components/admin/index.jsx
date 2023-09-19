@@ -21,18 +21,61 @@ const Admin = ({ axiosClient }) => {
   };
 
   const handleUpload = async () => {
-    const formData = new FormData();
+    const promises = [];
+
     selectedFiles.forEach((file) => {
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+      const formData = new FormData();
       formData.append("files", file);
-    });
-    const response = await axiosClient.current.post("/upload", formData);
-    Swal.fire({
-      text: await response.data["message"],
-      icon: "success",
+
+      let endpoint;
+      if (
+        fileExtension === "jpg" ||
+        fileExtension === "jpeg" ||
+        fileExtension === "png"
+      ) {
+        endpoint = "/images";
+      } else if (
+        fileExtension === "mp4" ||
+        fileExtension === "avi" ||
+        fileExtension === "mov"
+      ) {
+        endpoint = "/videos";
+      } else if (fileExtension === "pdf") {
+        endpoint = "/documents";
+      } else {
+        Swal.fire({
+          text: `Unsupported file type: ${file.name}`,
+          icon: "error",
+        });
+        return;
+      }
+
+      promises.push(
+        axiosClient.current
+          .post(endpoint, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "Access-Control-Allow-Origin": "*",
+            },
+          })
+          .then(() => {
+            Swal.fire({
+              text: `File "${file.name}" uploaded successfully`,
+              icon: "success",
+            });
+          })
+          .catch((error) => {
+            Swal.fire({
+              text: `Error uploading file "${file.name}": ${error.message}`,
+              icon: "error",
+            });
+          })
+      );
     });
 
-    const promises = youtubeLinks.map((link) => {
-      return axiosClient.current.post("/youtube?url=" + link);
+    youtubeLinks.forEach((link) => {
+      promises.push(axiosClient.current.post("/youtube?url=" + link));
     });
 
     await Promise.allSettled(promises);
@@ -53,9 +96,7 @@ const Admin = ({ axiosClient }) => {
 
   const handleYoutubeLinkInput = () => {
     setYoutubeLinks((prevLinks) => [...prevLinks, youtubeLinkInput]);
-    setYoutubeLinkInput(""); // Clear the input field
-    // upload and sent the link to the backend
-    setSelectedFiles((prevFiles) => [...prevFiles, youtubeLinkInput]);
+    setYoutubeLinkInput("");
   };
 
   return (
@@ -63,54 +104,14 @@ const Admin = ({ axiosClient }) => {
       <div className="page-container">
         <div className="container">
           <div className="card">
-            {/* Image Upload */}
+            {/* Image, PDF, Video ka Upload */}
             <h1
               className="title"
               style={{ marginTop: "2vh", marginBottom: "1vh" }}
             >
-              Image UPLOAD
+              File Upload
             </h1>
             <div className="flex flex-col items-center space-y-4">
-              <label
-                className="drop-zone"
-                onDrop={handleDrop}
-                onDragOver={preventDefault}
-              >
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  className="file-input"
-                  multiple
-                />
-                {selectedFiles.length > 0 ? (
-                  <div>
-                    {selectedFiles.map((file, index) => (
-                      <div key={index} className="selected-file">
-                        {file.name}
-                        <button
-                          className="remove-file"
-                          style={{ marginLeft: "5px" }}
-                          onClick={() => handleDiscard(index)}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-xl font-medium text-gray-500">
-                    Insert or Drop files here
-                  </span>
-                )}
-              </label>
-
-              {/* pdf uploads  */}
-              <h1
-                className="title"
-                style={{ marginTop: "2vh", marginBottom: "1vh" }}
-              >
-                PDF UPLOAD
-              </h1>
               <label
                 className="drop-zone"
                 onDrop={handleDrop}
@@ -181,7 +182,9 @@ const Admin = ({ axiosClient }) => {
               <button
                 onClick={handleUpload}
                 className={`upload-button`}
-                disabled={selectedFiles.length === 0}
+                disabled={
+                  selectedFiles.length === 0 && youtubeLinks.length === 0
+                }
               >
                 Upload
               </button>
