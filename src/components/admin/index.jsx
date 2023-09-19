@@ -39,7 +39,7 @@ const Admin = ({ axiosClient }) => {
     if (error) {
       Swal.fire({
         title: "Error",
-        text: `Unsupported file type: ${file.name}`,
+        text: `Unsupported file type`,
         icon: "error",
       });
       return;
@@ -55,7 +55,7 @@ const Admin = ({ axiosClient }) => {
       });
     });
 
-    promises.push(axiosClient.current.post("/youtube", urls));
+    promises.push(axiosClient.current.post("/youtube", youtubeLinks));
 
     const results = await Promise.allSettled(promises);
     const rejected = results.filter((result) => result.status === "rejected");
